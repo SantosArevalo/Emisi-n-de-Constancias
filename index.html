@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Sistema de Emisión de Constancias</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sistema de Emisión de Constancias</h1>
+        </header>
+
+        <section class="registro-curso">
+            <h2>Registro de Curso</h2>
+            <form id="formularioRegistro">
+                <input type="text" id="nombreCompleto" placeholder="Nombre Completo" required>
+                <input type="email" id="correoElectronico" placeholder="Correo Electrónico" required>
+                
+                <select id="cursosSelect" required>
+                    <option value="">Selecciona un Curso</option>
+                    <option value="curso1">Introducción a Python</option>
+                    <option value="curso2">Desarrollo Web Básico</option>
+                    <option value="curso3">Marketing Digital</option>
+                </select>
+
+                <button type="submit" class="btn">Inscribirse al Curso</button>
+            </form>
+        </section>
+
+        <section class="cursos-disponibles">
+            <h2>Cursos Disponibles</h2>
+            <div class="curso-item" onclick="showCourseModal('curso1')">
+                <h3>Introducción a Python</h3>
+                <p>Duración: 40 horas | Modalidad: Online</p>
+                <div class="progress-bar" id="progressBar1">0%</div>
+                <button class="btn download-btn" id="downloadBtn1" onclick="downloadCertificate('curso1')">Descargar Constancia</button>
+            </div>
+            <div class="curso-item" onclick="showCourseModal('curso2')">
+                <h3>Desarrollo Web Básico</h3>
+                <p>Duración: 60 horas | Modalidad: Online</p>
+                <div class="progress-bar" id="progressBar2">0%</div>
+                <button class="btn download-btn" id="downloadBtn2" onclick="downloadCertificate('curso2')">Descargar Constancia</button>
+            </div>
+            <div class="curso-item" onclick="showCourseModal('curso3')">
+                <h3>Marketing Digital</h3>
+                <p>Duración: 50 horas | Modalidad: Online</p>
+                <div class="progress-bar" id="progressBar3">0%</div>
+                <button class="btn download-btn" id="downloadBtn3" onclick="downloadCertificate('curso3')">Descargar Constancia</button>
+            </div>
+        </section>
+    </div>
+
+    <div class="footer">
+        © 2023 Sistema de Emisión de Constancias
+    </div>
+
+    <div id="courseModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeCourseModal()">&times;</span>
+            <h2 id="courseTitle"></h2>
+            <div id="courseDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        // Extraer jsPDF del objeto global window
+        const { jsPDF } = window.jspdf;
+
+        // Agregar un escuchador de eventos al formulario de registro
+        document.getElementById('formularioRegistro').addEventListener('submit', function(e) {
+            // Prevenir el envío predeterminado del formulario
+            e.preventDefault();
+            // Obtener el curso seleccionado
+            var selectedCourse = document.getElementById('cursosSelect').value;
+            
+            // Validar que se haya seleccionado un curso
+            if (selectedCourse) {
+                alert('¡Registro exitoso! Puedes comenzar a tomar el curso.');
+                // Iniciar el progreso del curso
+                startCourseProgress(selectedCourse);
+            } else {
+                alert('Por favor, selecciona un curso.');
+            }
+        });
+
+        // Función para iniciar el progreso del curso
+        function startCourseProgress(courseId) {
+            var progressBar, downloadBtn;
+            
+            // Seleccionar la barra de progreso y botón de descarga según el curso
+            switch(courseId) {
+                case 'curso1':
+                    progressBar = document.getElementById('progressBar1');
+                    downloadBtn = document.getElementById('downloadBtn1');
+                    break;
+                case 'curso2':
+                    progressBar = document.getElementById('progressBar2');
+                    downloadBtn = document.getElementById('downloadBtn2');
+                    break;
+                case 'curso3':
+                    progressBar = document.getElementById('progressBar3');
+                    downloadBtn = document.getElementById('downloadBtn3');
+                    break;
+                default:
+                    return;
+            }
+
+            // Iniciar la simulación de progreso del curso
+            var progress = 0;
+            var interval = setInterval(function() {
+                progress += 1;
+                // Actualizar el ancho y texto de la barra de progreso
+                progressBar.style.width = progress + '%';
+                progressBar.textContent = progress + '%';
+                
+                // Cuando se complete el 100%, detener el intervalo y mostrar botón de descarga
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    downloadBtn.style.display = 'block';
+                }
+            }, 500);
+        }
+
+        // Función para descargar la constancia del curso
+        function downloadCertificate(courseId) {
+            // Obtener los detalles del participante
+            const nombre = document.getElementById('nombreCompleto').value;
+            const email = document.getElementById('correoElectronico').value;
+
+            // Crear un nuevo documento PDF
+            const doc = new jsPDF();
+
+            // Detalles de los cursos
+            const cursos = {
+                'curso1': 'Introducción a Python',
+                'curso2': 'Desarrollo Web Básico',
+                'curso3': 'Marketing Digital'
+            };
+
+            // Agregar contenido al PDF
+            doc.setFontSize(22);
+            doc.text('Constancia de Curso', 105, 40, { align: 'center' });
+
+            doc.setFontSize(16);
+            doc.text(`Otorgado a: ${nombre}`, 105, 60, { align: 'center' });
+            doc.text(`Correo: ${email}`, 105, 70, { align: 'center' });
+
+            doc.setFontSize(18);
+            doc.text(`Curso: ${cursos[courseId]}`, 105, 90, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.text('Por haber completado satisfactoriamente el curso en línea', 105, 110, { align: 'center' });
+
+            // Agregar fecha actual
+            const fechaActual = new Date().toLocaleDateString();
+            doc.text(`Fecha de emisión: ${fechaActual}`, 105, 150, { align: 'center' });
+
+            // Guardar el PDF
+            doc.save(`Constancia_${cursos[courseId]}.pdf`);
+        }
+
+        // Función para mostrar el modal de detalles del curso
+        function showCourseModal(courseId) {
+            var modal = document.getElementById("courseModal");
+            var title = document.getElementById("courseTitle");
+            var details = document.getElementById("courseDetails");
+
+            // Establecer detalles del curso según el ID
+            switch (courseId) {
+                case "curso1":
+                    title.textContent = "Introducción a Python";
+                    details.innerHTML = `
+                        <p>Duración: 40 horas | Modalidad: Online</p>
+                        <h3>Contenido del curso:</h3>
+                        <ul>
+                            <li>Introducción a Python</li>
+                            <li>Variables y tipos de datos</li>
+                            <li>Estructuras de control</li>
+                            <li>Funciones y modularidad</li>
+                            <li>Manejo de archivos</li>
+                            <li>Programación orientada a objetos</li>
+                            <li>Bibliotecas y frameworks</li>
+                        </ul>
+                    `;
+                    break;
+                case "curso2":
+                    title.textContent = "Desarrollo Web Básico";
+                    details.innerHTML = `
+                        <p>Duración: 60 horas | Modalidad: Online</p>
+                        <h3>Contenido del curso:</h3>
+                        <ul>
+                            <li>Introducción a HTML</li>
+                            <li>Estilos con CSS</li>
+                            <li>Interactividad con JavaScript</li>
+                            <li>Estructura de un sitio web</li>
+                            <li>Diseño responsivo</li>
+                            <li>Frameworks y librerías</li>
+                            <li>Buenas prácticas de desarrollo</li>
+                        </ul>
+                    `;
+                    break;
+                case "curso3":
+                    title.textContent = "Marketing Digital";
+                    details.innerHTML = `
+                        <p>Duración: 50 horas | Modalidad: Online</p>
+                        <h3>Contenido del curso:</h3>
+                        <ul>
+                            <li>Introducción al marketing digital</li>
+                            <li>Estrategias de marketing en redes sociales</li>
+                            <li>Publicidad digital y SEO</li>
+                            <li>Análisis de métricas y KPIs</li>
+                            <li>Email marketing</li>
+                            <li>Herramientas y plataformas</li>
+                            <li>Tendencias y casos de éxito</li>
+                        </ul>
+                    `;
+                    break;
+            }
+
+            // Mostrar el modal
+            modal.style.display = "block";
+        }
+
+        // Función para cerrar el modal de curso
+        function closeCourseModal() {
+            var modal = document.getElementById("courseModal");
+            modal.style.display = "none";
+        }
+    </script>
+</body>
+</html>
